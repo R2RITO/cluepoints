@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from typing import Annotated, List
-
+import logging
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Session, SQLModel, select
 
@@ -14,6 +14,10 @@ from models.account import (
     AccountTypeResponse,
 )
 from models.user import User, UserCreate, UserResponse, UserUpdate
+from logging_config import configure_logging
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 
 def create_db_and_tables():
@@ -66,6 +70,7 @@ def update_user(
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    logger.info(f"User created: {db_user.id}")
     return db_user
 
 
@@ -73,6 +78,7 @@ def update_user(
 def get_user(user_id: int, db: Annotated[Session, Depends(get_db)]):
     db_user = db.get(User, user_id)
     if not db_user:
+        logger.error(f"User not found: {user_id}")
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
@@ -138,6 +144,7 @@ def transfer_funds(
         db.commit()
     except Exception as e:
         db.rollback()
+        logger.error(f"Error making transference between {transfer_data.from_account_id} and {transfer_data.to_account_id}")
         raise HTTPException(status_code=500, detail=f"Transfer failed: {e}") from None
 
     return {"message": "Transfer successful"}

@@ -5,8 +5,6 @@ from typing import Optional
 from geopy import Location, Nominatim
 from sqlmodel import Field, Relationship, SQLModel
 
-from models.account import Account
-
 # class AddressBase(SQLModel):
 #     street: str
 #     city: str
