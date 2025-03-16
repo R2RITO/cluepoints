@@ -1,6 +1,5 @@
-[tool.ruff]
 line-length = 120
-select = [
+lint.select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
     "F",  # pyflakes
@@ -9,4 +8,4 @@ select = [
     "B",  # flake8-bugbear
     "UP", # pyupgrade
 ]
-ignore = ["E501"] #ignore line length errors, as black will take care of this.
+lint.ignore = ["E501"] #ignore line length errors, as black will take care of this.

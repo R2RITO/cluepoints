@@ -1,12 +1,19 @@
-from typing import List
-from models.user import User, UserCreate, UserUpdate, UserResponse
-from models.account import AccountType, AccountTypeResponse
-from models.account import Account, AccountCreate, AccountResponse
-from models.account import AccountTransfer
-from database.postgres import get_db, engine
-from fastapi import FastAPI, HTTPException, Depends, Query
-from sqlmodel import Session, SQLModel, select
 from contextlib import asynccontextmanager
+from typing import Annotated, List
+
+from fastapi import Depends, FastAPI, HTTPException, Query
+from sqlmodel import Session, SQLModel, select
+
+from database.postgres import engine, get_db
+from models.account import (
+    Account,
+    AccountCreate,
+    AccountResponse,
+    AccountTransfer,
+    AccountType,
+    AccountTypeResponse,
+)
+from models.user import User, UserCreate, UserResponse, UserUpdate
 
 
 def create_db_and_tables():
@@ -24,7 +31,7 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/users/", response_model=UserResponse, status_code=201)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
+def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
     usr = User.model_validate(user)
     usr.calculate_lat_long()
     db.add(usr)
@@ -34,13 +41,19 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/users/", response_model=List[UserResponse])
-def list_users(offset: int = 0, limit: int = Query(default=100, le=100), db: Session = Depends(get_db)):
+def list_users(
+    db: Annotated[Session, Depends(get_db)],
+    offset: int = 0,
+    limit: int = Query(default=100, le=100),
+):
     users = db.exec(select(User).offset(offset).limit(limit)).all()
     return users
 
 
 @app.put("/users/{user_id}", response_model=UserResponse)
-def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
+def update_user(
+    user_id: int, user: UserUpdate, db: Annotated[Session, Depends(get_db)]
+):
     db_user = db.get(User, user_id)
 
     if not db_user:
@@ -57,7 +70,7 @@ def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
 
 
 @app.get("/users/{user_id}", response_model=UserResponse)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(user_id: int, db: Annotated[Session, Depends(get_db)]):
     db_user = db.get(User, user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -66,14 +79,15 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 ###############
 
+
 @app.get("/account_types/", response_model=List[AccountTypeResponse])
-def get_account_types(db: Session = Depends(get_db)):
+def get_account_types(db: Annotated[Session, Depends(get_db)]):
     account_types = db.exec(select(AccountType)).all()
     return account_types
 
 
 @app.post("/accounts/", response_model=AccountResponse, status_code=201)
-def create_account(account: AccountCreate, db: Session = Depends(get_db)):
+def create_account(account: AccountCreate, db: Annotated[Session, Depends(get_db)]):
     acc = Account.model_validate(account)
     db.add(acc)
     db.commit()
@@ -82,21 +96,31 @@ def create_account(account: AccountCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/accounts/", response_model=List[AccountResponse])
-def get_accounts(db: Session = Depends(get_db)):
+def get_accounts(db: Annotated[Session, Depends(get_db)]):
     accounts = db.exec(select(Account)).all()
     return accounts
 
 
 @app.post("/accounts/transfer/", response_model=None)
-def transfer_funds(transfer_data: AccountTransfer, db: Session = Depends(get_db)):
+def transfer_funds(
+    transfer_data: AccountTransfer, db: Annotated[Session, Depends(get_db)]
+):
     """
     Transfers funds between two accounts atomically with database locking.
     """
     if transfer_data.amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be positive")
 
-    from_account = db.exec(select(Account).where(Account.id == transfer_data.from_account_id).with_for_update()).first()
-    to_account = db.exec(select(Account).where(Account.id == transfer_data.to_account_id).with_for_update()).first()
+    from_account = db.exec(
+        select(Account)
+        .where(Account.id == transfer_data.from_account_id)
+        .with_for_update()
+    ).first()
+    to_account = db.exec(
+        select(Account)
+        .where(Account.id == transfer_data.to_account_id)
+        .with_for_update()
+    ).first()
 
     if not from_account:
         raise HTTPException(status_code=404, detail="From account not found")
@@ -114,6 +138,6 @@ def transfer_funds(transfer_data: AccountTransfer, db: Session = Depends(get_db)
         db.commit()
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Transfer failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Transfer failed: {e}") from None
 
     return {"message": "Transfer successful"}

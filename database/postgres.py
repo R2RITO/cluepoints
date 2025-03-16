@@ -1,9 +1,10 @@
-from sqlmodel import create_engine, Session
 from os import environ
 
-DB_USERNAME = environ.get('DB_USERNAME', 'arturo')
-DB_PASSWORD = environ.get('DB_PASSWORD', 'arturo')
-DB_HOST = environ.get('DB_HOST', 'localhost')
+from sqlmodel import Session, create_engine
+
+DB_USERNAME = environ.get("DB_USERNAME", "arturo")
+DB_PASSWORD = environ.get("DB_PASSWORD", "arturo")
+DB_HOST = environ.get("DB_HOST", "localhost")
 
 DATABASE_URL = f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/cluepoints"
 

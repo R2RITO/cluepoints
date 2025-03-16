@@ -1,13 +1,15 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine, select
-from main import app, create_db_and_tables, get_db
-from models.user import User, UserCreate, UserUpdate
-from models.account import Account, AccountCreate, AccountType
+from sqlmodel import Session, SQLModel, create_engine
+
+from main import app, get_db
+from models.account import Account, AccountType
+from models.user import User
 
 # In-memory SQLite database for testing
 DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
 
 @pytest.fixture(name="session")
 def session_fixture():
@@ -15,6 +17,7 @@ def session_fixture():
     with Session(engine) as session:
         yield session
     SQLModel.metadata.drop_all(engine)
+
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session):
@@ -36,7 +39,7 @@ def test_integration_create_user_account_transfer(client: TestClient, session: S
         "street": "1600 Amphitheatre Parkway",
         "city": "Mountain View",
         "postal_code": "94043",
-        "country": "USA"
+        "country": "USA",
     }
     user_response = client.post("/users/", json=user_data)
     assert user_response.status_code == 201
@@ -62,7 +65,7 @@ def test_integration_create_user_account_transfer(client: TestClient, session: S
         "account_number": "123456789",
         "balance": 1000.0,
         "account_type_id": account_type1.id,
-        "user_id": user_id
+        "user_id": user_id,
     }
 
     account_response = client.post("/accounts/", json=account_data)
@@ -75,7 +78,7 @@ def test_integration_create_user_account_transfer(client: TestClient, session: S
         "account_number": "987654321",
         "balance": 500.0,
         "account_type_id": account_type2.id,
-        "user_id": user_id
+        "user_id": user_id,
     }
     second_account_response = client.post("/accounts/", json=second_account_data)
     assert second_account_response.status_code == 201
@@ -86,7 +89,7 @@ def test_integration_create_user_account_transfer(client: TestClient, session: S
     transfer_data = {
         "from_account_id": account_id,
         "to_account_id": second_account_id,
-        "amount": 500.0
+        "amount": 500.0,
     }
     transfer_response = client.post("/accounts/transfer/", json=transfer_data)
     assert transfer_response.status_code == 200

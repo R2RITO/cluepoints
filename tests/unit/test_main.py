@@ -1,9 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
-from main import app, create_db_and_tables, get_db
-from models.user import User, UserCreate, UserUpdate
+
+from main import app, get_db
 from models.account import Account, AccountCreate, AccountType
+from models.user import User, UserCreate
 
 # In-memory SQLite database for testing
 DATABASE_URL = "sqlite:///./test.db"
@@ -37,7 +38,7 @@ def test_create_user(client: TestClient):
         "street": "123 Main St",
         "city": "Anytown",
         "postal_code": "12345",
-        "country": "USA"
+        "country": "USA",
     }
     response = client.post("/users/", json=user_data)
     assert response.status_code == 201
@@ -54,7 +55,7 @@ def test_list_users(client: TestClient, session: Session):
         street="456 Elm St",
         city="Othertown",
         postal_code="67890",
-        country="Canada"
+        country="Canada",
     )
     db_user = User.model_validate(user_data)
     session.add(db_user)
@@ -74,7 +75,7 @@ def test_update_user(client: TestClient, session: Session):
         street="789 Oak Ave",
         city="Somecity",
         postal_code="13579",
-        country="UK"
+        country="UK",
     )
     db_user = User.model_validate(user_data)
     session.add(db_user)
@@ -86,7 +87,7 @@ def test_update_user(client: TestClient, session: Session):
         "street": "789 Oak Ave",
         "city": "Somecity",
         "postal_code": "13579",
-        "country": "UK"
+        "country": "UK",
     }
     response = client.put(f"/users/{db_user.id}", json=updated_data)
     assert response.status_code == 200
@@ -102,7 +103,7 @@ def test_get_user(client: TestClient, session: Session):
         street="101 Pine Ln",
         city="Anothercity",
         postal_code="24680",
-        country="Australia"
+        country="Australia",
     )
     db_user = User.model_validate(user_data)
     session.add(db_user)
@@ -121,7 +122,7 @@ def test_create_account(client: TestClient, session: Session):
         street="111 Cedar Rd",
         city="Yetanothercity",
         postal_code="98765",
-        country="Germany"
+        country="Germany",
     )
     db_user = User.model_validate(user_data)
     session.add(db_user)
@@ -135,7 +136,7 @@ def test_create_account(client: TestClient, session: Session):
         "account_number": "1234567890",
         "balance": 1000.0,
         "account_type_id": account_type_data.id,
-        "user_id": db_user.id
+        "user_id": db_user.id,
     }
     response = client.post("/accounts/", json=account_data)
     assert response.status_code == 201
@@ -151,7 +152,7 @@ def test_transfer_funds(client: TestClient, session: Session):
         street="222 Birch St",
         city="Finalcity",
         postal_code="54321",
-        country="France"
+        country="France",
     )
     db_user = User.model_validate(user_data)
     session.add(db_user)
@@ -165,13 +166,13 @@ def test_transfer_funds(client: TestClient, session: Session):
         account_number="1111222233",
         balance=1000.0,
         account_type_id=account_type_data.id,
-        user_id=db_user.id
+        user_id=db_user.id,
     )
     to_account_data = AccountCreate(
         account_number="4444555566",
         balance=500.0,
         account_type_id=account_type_data.id,
-        user_id=db_user.id
+        user_id=db_user.id,
     )
     from_account = Account.model_validate(from_account_data)
     to_account = Account.model_validate(to_account_data)
@@ -182,7 +183,7 @@ def test_transfer_funds(client: TestClient, session: Session):
     transfer_data = {
         "from_account_id": from_account.id,
         "to_account_id": to_account.id,
-        "amount": 500.0
+        "amount": 500.0,
     }
     response = client.post("/accounts/transfer/", json=transfer_data)
     assert response.status_code == 200
@@ -201,7 +202,7 @@ def test_transfer_insufficient_funds(client: TestClient, session: Session):
         street="123 Insufficient St",
         city="Nowhere",
         postal_code="00000",
-        country="Testland"
+        country="Testland",
     )
     db_user = User.model_validate(user_data)
     session.add(db_user)
@@ -215,13 +216,13 @@ def test_transfer_insufficient_funds(client: TestClient, session: Session):
         account_number="123456789",
         balance=100.0,
         account_type_id=account_type_data.id,
-        user_id=db_user.id
+        user_id=db_user.id,
     )
     to_account_data = AccountCreate(
         account_number="987654321",
         balance=500.0,
         account_type_id=account_type_data.id,
-        user_id=db_user.id
+        user_id=db_user.id,
     )
     from_account = Account.model_validate(from_account_data)
     to_account = Account.model_validate(to_account_data)
@@ -232,7 +233,7 @@ def test_transfer_insufficient_funds(client: TestClient, session: Session):
     transfer_data = {
         "from_account_id": from_account.id,
         "to_account_id": to_account.id,
-        "amount": 200.0  # Attempt to transfer more than the balance
+        "amount": 200.0,  # Attempt to transfer more than the balance
     }
     response = client.post("/accounts/transfer/", json=transfer_data)
     assert response.status_code == 400

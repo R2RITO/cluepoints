@@ -1,9 +1,11 @@
 # Class used to define Users
-from typing import Optional
 from datetime import date
-from sqlmodel import SQLModel, Field, Relationship
-from geopy import Nominatim, Location
+from typing import Optional
 
+from geopy import Location, Nominatim
+from sqlmodel import Field, Relationship, SQLModel
+
+from models.account import Account
 
 # class AddressBase(SQLModel):
 #     street: str
