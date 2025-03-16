@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "cluepoints"
+version = "0.1.0"
+description = "Interview project for CluePoints"
+authors = ["Arturo Voltattorni <arturo.voltattorni@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "0.115.11"
+psycopg2-binary = "2.9.10"
+sqlmodel = "0.0.24"
+geopy = "2.4.1"
+requests = "2.32.3"
+httpx = "0.28.1"
+pre-commit = "^4.1.0"
+ruff = "^0.11.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "8.3.5"
+pytest-mock = "3.14.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
