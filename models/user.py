@@ -1,30 +1,12 @@
 # Class used to define Users
 from datetime import date
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from geopy import Location, Nominatim
 from sqlmodel import Field, Relationship, SQLModel
 
-# class AddressBase(SQLModel):
-#     street: str
-#     city: str
-#     postal_code: str
-#     country: str
-#
-#
-# class Address(AddressBase, table=True):
-#     id: Optional[int] = Field(default=None, primary_key=True)
-#     latitude: Optional[float] = Field(default=None)
-#     longitude: Optional[float] = Field(default=None)
-#     user_id: Optional[int] = Field(default=None, foreign_key="user.id")
-#     user: "User" = Relationship(back_populates="address")
-#
-#
-# class AddressUpdate(SQLModel):
-#     street: str | None
-#     city: str | None
-#     postal_code: str | None
-#     country: str | None
+if TYPE_CHECKING:
+    from models.account import Account
 
 
 class UserBase(SQLModel):

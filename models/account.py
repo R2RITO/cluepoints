@@ -1,10 +1,11 @@
 # Class used to define Accounts
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from pydantic import BaseModel
 from sqlmodel import CheckConstraint, Field, Relationship, SQLModel
 
-from models.user import User
+if TYPE_CHECKING:
+    from models.user import User
 
 
 class AccountTypeBase(SQLModel):

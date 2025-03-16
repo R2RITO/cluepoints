@@ -1,10 +1,12 @@
+import logging
 from contextlib import asynccontextmanager
 from typing import Annotated, List
-import logging
+
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Session, SQLModel, select
 
 from database.postgres import engine, get_db
+from logging_config import configure_logging
 from models.account import (
     Account,
     AccountCreate,
@@ -14,7 +16,6 @@ from models.account import (
     AccountTypeResponse,
 )
 from models.user import User, UserCreate, UserResponse, UserUpdate
-from logging_config import configure_logging
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -144,7 +145,9 @@ def transfer_funds(
         db.commit()
     except Exception as e:
         db.rollback()
-        logger.error(f"Error making transference between {transfer_data.from_account_id} and {transfer_data.to_account_id}")
+        logger.error(
+            f"Error making transference between {transfer_data.from_account_id} and {transfer_data.to_account_id}"
+        )
         raise HTTPException(status_code=500, detail=f"Transfer failed: {e}") from None
 
     return {"message": "Transfer successful"}
