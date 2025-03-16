@@ -39,8 +39,7 @@ This project provides a REST API for managing users and their accounts, built wi
 2.  **Clone the repository:**
 
     ```bash
-    git clone <repository_url>
-    cd <repository_directory>
+    git clone git@github.com:cluepoints-recruitment/POC-Back-End-Arturo.git
     ```
 
 3.  **Install dependencies using Poetry:**
